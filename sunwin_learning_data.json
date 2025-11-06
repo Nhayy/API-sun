@@ -1,0 +1,154 @@
+{
+  "cau_bet": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "cau_dao_1_1": {
+    "total": 2,
+    "correct": 1,
+    "confidence_adjustment": 0,
+    "recent_performance": [
+      0,
+      1
+    ]
+  },
+  "cau_1_2_3": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "cau_3_2_1": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "nhip_nghieng_5": {
+    "total": 1,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": [
+      0
+    ]
+  },
+  "nhip_nghieng_7": {
+    "total": 5,
+    "correct": 2,
+    "confidence_adjustment": -8,
+    "recent_performance": [
+      0,
+      1,
+      1,
+      0,
+      0
+    ]
+  },
+  "gap_thep_martingale": {
+    "total": 2,
+    "correct": 1,
+    "confidence_adjustment": 0,
+    "recent_performance": [
+      0,
+      1
+    ]
+  },
+  "phan_tich_tong": {
+    "total": 1,
+    "correct": 1,
+    "confidence_adjustment": 0,
+    "recent_performance": [
+      1
+    ]
+  },
+  "xu_huong_manh": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "cau_nhay": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "cau_lech": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "fibonacci": {
+    "total": 15,
+    "correct": 9,
+    "confidence_adjustment": 0,
+    "recent_performance": [
+      0,
+      1,
+      1,
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1,
+      0,
+      1,
+      1,
+      0
+    ]
+  },
+  "break_reversal": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "pattern_correlation": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "cau_2_2": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "cau_2_1_2": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "phan_tich_xuc_xac": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "house_intervention": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "odd_even_analysis": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  },
+  "total_sum_trend": {
+    "total": 0,
+    "correct": 0,
+    "confidence_adjustment": 0,
+    "recent_performance": []
+  }
+}
