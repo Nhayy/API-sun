@@ -68,12 +68,12 @@ function updatePatternLearning(pattern, isCorrect) {
       recent_performance: []
     };
   }
-  
+
   patternLearningData[pattern].total++;
   if (isCorrect) {
     patternLearningData[pattern].correct++;
   }
-  
+
   if (!patternLearningData[pattern].recent_performance) {
     patternLearningData[pattern].recent_performance = [];
   }
@@ -81,9 +81,9 @@ function updatePatternLearning(pattern, isCorrect) {
   if (patternLearningData[pattern].recent_performance.length > 20) {
     patternLearningData[pattern].recent_performance.pop();
   }
-  
+
   const accuracy = patternLearningData[pattern].correct / patternLearningData[pattern].total;
-  
+
   let recentAccuracy = accuracy;
   if (patternLearningData[pattern].recent_performance.length >= 5) {
     const recent = patternLearningData[pattern].recent_performance;
@@ -96,9 +96,9 @@ function updatePatternLearning(pattern, isCorrect) {
     });
     recentAccuracy = weightedSum / weightTotal;
   }
-  
+
   const finalAccuracy = (accuracy * 0.4) + (recentAccuracy * 0.6);
-  
+
   if (patternLearningData[pattern].total >= 3) {
     if (finalAccuracy >= 0.75) {
       patternLearningData[pattern].confidence_adjustment = +8;
@@ -116,9 +116,9 @@ function updatePatternLearning(pattern, isCorrect) {
       patternLearningData[pattern].confidence_adjustment = -8;
     }
   }
-  
+
   console.log(`📚 [Sun.win] Học: ${pattern} - Overall: ${patternLearningData[pattern].correct}/${patternLearningData[pattern].total} (${(accuracy * 100).toFixed(1)}%) | Recent: ${(recentAccuracy * 100).toFixed(1)}% | Adj: ${patternLearningData[pattern].confidence_adjustment > 0 ? '+' : ''}${patternLearningData[pattern].confidence_adjustment}%`);
-  
+
   if (patternLearningData[pattern].total % 5 === 0) {
     saveLearningData();
   }
@@ -137,10 +137,10 @@ function applyLearningAdjustment(pattern, baseConfidence) {
 // 1. CẦU BẾT - Kết quả liên tiếp cùng cửa
 function analyzeCauBet(history) {
   if (history.length < 3) return null;
-  
+
   let consecutiveCount = 1;
   let lastResult = history[0].ket_qua;
-  
+
   for (let i = 1; i < Math.min(history.length, 20); i++) {
     if (history[i].ket_qua === lastResult) {
       consecutiveCount++;
@@ -148,11 +148,11 @@ function analyzeCauBet(history) {
       break;
     }
   }
-  
+
   if (consecutiveCount >= 3) {
     let baseConfidence;
     let prediction;
-    
+
     if (consecutiveCount >= 6) {
       prediction = lastResult === 'Tài' ? 'Xỉu' : 'Tài';
       baseConfidence = Math.min(62 + (consecutiveCount - 6) * 2, 72);
@@ -160,7 +160,7 @@ function analyzeCauBet(history) {
       prediction = lastResult;
       baseConfidence = 56 + consecutiveCount;
     }
-    
+
     return {
       pattern: 'cau_bet',
       count: consecutiveCount,
@@ -169,17 +169,17 @@ function analyzeCauBet(history) {
       description: `Cầu bệt ${consecutiveCount} phiên liên tiếp ${lastResult}`
     };
   }
-  
+
   return null;
 }
 
 // 2. CẦU ĐẢO 1-1 - Xen kẽ Tài Xỉu
 function analyzeCauDao11(history) {
   if (history.length < 3) return null;
-  
+
   const recent = history.slice(0, 10);
   let consecutiveDao = 0;
-  
+
   for (let i = 0; i < recent.length - 1; i++) {
     if (recent[i].ket_qua !== recent[i + 1].ket_qua) {
       consecutiveDao++;
@@ -187,11 +187,11 @@ function analyzeCauDao11(history) {
       break;
     }
   }
-  
+
   if (consecutiveDao >= 3) {
     const nextPrediction = recent[0].ket_qua === 'Tài' ? 'Xỉu' : 'Tài';
     const baseConfidence = 58 + Math.min(consecutiveDao - 3, 5) * 2;
-    
+
     return {
       pattern: 'cau_dao_1_1',
       prediction: nextPrediction,
@@ -199,24 +199,24 @@ function analyzeCauDao11(history) {
       description: `Cầu đảo 1-1 xuất hiện ${consecutiveDao} lần`
     };
   }
-  
+
   return null;
 }
 
 // 3. CẦU 1-2-3 - Pattern tăng dần
 function analyzeCau123(history) {
   if (history.length < 6) return null;
-  
+
   const recent = history.slice(0, 6);
-  
+
   if (recent[0].ket_qua === recent[1].ket_qua && 
       recent[0].ket_qua !== recent[2].ket_qua &&
       recent[2].ket_qua === recent[3].ket_qua &&
       recent[2].ket_qua === recent[4].ket_qua &&
       recent[2].ket_qua !== recent[5].ket_qua) {
-    
+
     const prediction = recent[2].ket_qua;
-    
+
     return {
       pattern: 'cau_1_2_3',
       prediction: prediction,
@@ -224,24 +224,24 @@ function analyzeCau123(history) {
       description: 'Cầu 1-2-3 đang hoạt động'
     };
   }
-  
+
   return null;
 }
 
 // 4. CẦU 3-2-1 - Pattern giảm dần
 function analyzeCau321(history) {
   if (history.length < 6) return null;
-  
+
   const recent = history.slice(0, 6);
-  
+
   if (recent[0].ket_qua === recent[1].ket_qua && 
       recent[0].ket_qua === recent[2].ket_qua &&
       recent[0].ket_qua !== recent[3].ket_qua &&
       recent[3].ket_qua === recent[4].ket_qua &&
       recent[3].ket_qua !== recent[5].ket_qua) {
-    
+
     const prediction = recent[5].ket_qua === 'Tài' ? 'Xỉu' : 'Tài';
-    
+
     return {
       pattern: 'cau_3_2_1',
       prediction: prediction,
@@ -249,23 +249,23 @@ function analyzeCau321(history) {
       description: 'Cầu 3-2-1 đang xuất hiện'
     };
   }
-  
+
   return null;
 }
 
 // 5. NHỊP NGHIÊNG 5 - 4/5 phiên cùng kết quả
 function analyzeCauNghieng5(history) {
   if (history.length < 5) return null;
-  
+
   const recent5 = history.slice(0, 5);
   let taiCount = 0;
   let xiuCount = 0;
-  
+
   recent5.forEach(item => {
     if (item.ket_qua === 'Tài') taiCount++;
     else xiuCount++;
   });
-  
+
   if (taiCount === 4 && xiuCount === 1) {
     return {
       pattern: 'nhip_nghieng_5',
@@ -281,23 +281,23 @@ function analyzeCauNghieng5(history) {
       description: 'Nhịp nghiêng 5: 4/5 phiên Xỉu'
     };
   }
-  
+
   return null;
 }
 
 // 6. NHỊP NGHIÊNG 7 - 5/7 hoặc 6/7 phiên cùng kết quả
 function analyzeCauNghieng7(history) {
   if (history.length < 7) return null;
-  
+
   const recent7 = history.slice(0, 7);
   let taiCount = 0;
   let xiuCount = 0;
-  
+
   recent7.forEach(item => {
     if (item.ket_qua === 'Tài') taiCount++;
     else xiuCount++;
   });
-  
+
   if (taiCount >= 5) {
     return {
       pattern: 'nhip_nghieng_7',
@@ -313,21 +313,21 @@ function analyzeCauNghieng7(history) {
       description: `Nhịp nghiêng 7: ${xiuCount}/7 phiên Xỉu`
     };
   }
-  
+
   return null;
 }
 
 // 7. PHÂN TÍCH TỔNG ĐIỂM
 function analyzePhanTichTong(history) {
   if (history.length < 5) return null;
-  
+
   const recent5 = history.slice(0, 5);
   const totals = recent5.map(item => parseInt(item.tong)).filter(t => !isNaN(t));
-  
+
   if (totals.length !== 5) return null;
-  
+
   const avgTotal = totals.reduce((a, b) => a + b, 0) / totals.length;
-  
+
   if (avgTotal >= 12) {
     return {
       pattern: 'phan_tich_tong',
@@ -343,23 +343,23 @@ function analyzePhanTichTong(history) {
       description: `Trung bình tổng điểm: ${avgTotal.toFixed(1)}`
     };
   }
-  
+
   return null;
 }
 
 // 8. XU HƯỚNG MẠNH 15 VÁN
 function analyzeXuHuongManh(history) {
   if (history.length < 15) return null;
-  
+
   const recent15 = history.slice(0, 15);
   let taiCount = 0;
   let xiuCount = 0;
-  
+
   recent15.forEach(item => {
     if (item.ket_qua === 'Tài') taiCount++;
     else xiuCount++;
   });
-  
+
   if (taiCount >= 11) {
     return {
       pattern: 'xu_huong_manh',
@@ -375,27 +375,27 @@ function analyzeXuHuongManh(history) {
       description: `Xu hướng mạnh: ${xiuCount}/15 phiên Xỉu`
     };
   }
-  
+
   return null;
 }
 
 // 9. CẦU NHẢY/LUNG TUNG
 function analyzeCauNhay(history) {
   if (history.length < 10) return null;
-  
+
   const recent10 = history.slice(0, 10);
   let changes = 0;
-  
+
   for (let i = 0; i < recent10.length - 1; i++) {
     if (recent10[i].ket_qua !== recent10[i + 1].ket_qua) {
       changes++;
     }
   }
-  
+
   if (changes >= 7) {
     const lastResult = recent10[0].ket_qua;
     const prediction = lastResult === 'Tài' ? 'Xỉu' : 'Tài';
-    
+
     return {
       pattern: 'cau_nhay',
       prediction: prediction,
@@ -403,17 +403,17 @@ function analyzeCauNhay(history) {
       description: `Cầu nhảy: ${changes}/9 lần đổi kết quả`
     };
   }
-  
+
   return null;
 }
 
 // 10. GẤP THẾP PROGRESSIVE (MARTINGALE)
 function analyzeGapThepMartingale(history) {
   if (history.length < 5) return null;
-  
+
   let consecutiveCount = 1;
   let lastResult = history[0].ket_qua;
-  
+
   for (let i = 1; i < Math.min(history.length, 15); i++) {
     if (history[i].ket_qua === lastResult) {
       consecutiveCount++;
@@ -421,10 +421,10 @@ function analyzeGapThepMartingale(history) {
       break;
     }
   }
-  
+
   if (consecutiveCount >= 2) {
     const baseConfidence = Math.min(57 + (consecutiveCount - 2) * 2, 70);
-    
+
     return {
       pattern: 'gap_thep_martingale',
       prediction: lastResult,
@@ -432,23 +432,23 @@ function analyzeGapThepMartingale(history) {
       description: `Gấp thếp: ${consecutiveCount} phiên liên tiếp ${lastResult}, tiếp tục cùng cửa`
     };
   }
-  
+
   return null;
 }
 
 // 11. FIBONACCI PATTERN
 function analyzeFibonacci(history) {
   if (history.length < 10) return null;
-  
+
   const recent = history.slice(0, 10);
   const taiPositions = [];
   const xiuPositions = [];
-  
+
   recent.forEach((item, idx) => {
     if (item.ket_qua === 'Tài') taiPositions.push(idx);
     else xiuPositions.push(idx);
   });
-  
+
   const checkFib = (positions) => {
     if (positions.length < 3) return false;
     const gaps = [];
@@ -457,7 +457,7 @@ function analyzeFibonacci(history) {
     }
     return gaps.length >= 2 && Math.abs(gaps[gaps.length-1] - gaps[gaps.length-2]) <= 2;
   };
-  
+
   if (checkFib(taiPositions)) {
     return {
       pattern: 'fibonacci',
@@ -466,7 +466,7 @@ function analyzeFibonacci(history) {
       description: 'Fibonacci pattern phát hiện cho Tài'
     };
   }
-  
+
   if (checkFib(xiuPositions)) {
     return {
       pattern: 'fibonacci',
@@ -475,24 +475,24 @@ function analyzeFibonacci(history) {
       description: 'Fibonacci pattern phát hiện cho Xỉu'
     };
   }
-  
+
   return null;
 }
 
 // 12. CẦU 2-2 - Pattern 2 phiên liên tiếp rồi đổi
 function analyzeCau22(history) {
   if (history.length < 6) return null;
-  
+
   const recent = history.slice(0, 6);
-  
+
   if (recent[0].ket_qua === recent[1].ket_qua && 
       recent[0].ket_qua !== recent[2].ket_qua &&
       recent[2].ket_qua === recent[3].ket_qua &&
       recent[0].ket_qua === recent[4].ket_qua &&
       recent[0].ket_qua === recent[5].ket_qua) {
-    
+
     const prediction = recent[0].ket_qua === 'Tài' ? 'Xỉu' : 'Tài';
-    
+
     return {
       pattern: 'cau_2_2',
       prediction: prediction,
@@ -500,13 +500,13 @@ function analyzeCau22(history) {
       description: 'Cầu 2-2 đang hoạt động mạnh'
     };
   }
-  
+
   if (recent[0].ket_qua === recent[1].ket_qua && 
       recent[0].ket_qua !== recent[2].ket_qua &&
       recent[2].ket_qua === recent[3].ket_qua) {
-    
+
     const prediction = recent[2].ket_qua === 'Tài' ? 'Xỉu' : 'Tài';
-    
+
     return {
       pattern: 'cau_2_2',
       prediction: prediction,
@@ -514,24 +514,24 @@ function analyzeCau22(history) {
       description: 'Cầu 2-2 đang hình thành'
     };
   }
-  
+
   return null;
 }
 
 // 13. CẦU 2-1-2 - Pattern phức tạp
 function analyzeCau212(history) {
   if (history.length < 5) return null;
-  
+
   const recent = history.slice(0, 5);
-  
+
   if (recent[0].ket_qua === recent[1].ket_qua && 
       recent[0].ket_qua !== recent[2].ket_qua &&
       recent[2].ket_qua !== recent[3].ket_qua &&
       recent[3].ket_qua === recent[4].ket_qua) {
-    
+
     if (recent[0].ket_qua === recent[3].ket_qua) {
       const prediction = recent[0].ket_qua === 'Tài' ? 'Xỉu' : 'Tài';
-      
+
       return {
         pattern: 'cau_2_1_2',
         prediction: prediction,
@@ -540,30 +540,30 @@ function analyzeCau212(history) {
       };
     }
   }
-  
+
   return null;
 }
 
 // 14. PHÂN TÍCH XÚC XẮC ĐƠN LẺ - Nhận diện theo số xúc xắc
 function analyzePhanTichXucXac(history) {
   if (history.length < 10) return null;
-  
+
   const recent10 = history.slice(0, 10);
   let tongXucXacChan = 0;
   let tongXucXacLe = 0;
-  
+
   recent10.forEach(item => {
     const x1 = parseInt(item.xuc_xac_1);
     const x2 = parseInt(item.xuc_xac_2);
     const x3 = parseInt(item.xuc_xac_3);
-    
+
     if (!isNaN(x1) && !isNaN(x2) && !isNaN(x3)) {
       const chanCount = [x1, x2, x3].filter(x => x % 2 === 0).length;
       if (chanCount >= 2) tongXucXacChan++;
       else tongXucXacLe++;
     }
   });
-  
+
   if (tongXucXacChan >= 7) {
     return {
       pattern: 'phan_tich_xuc_xac',
@@ -579,18 +579,18 @@ function analyzePhanTichXucXac(history) {
       description: `Xu hướng xúc xắc lẻ: ${tongXucXacLe}/10 phiên`
     };
   }
-  
+
   return null;
 }
 
 // 15. PHÂN TÍCH LẺ CHẴN TỔNG ĐIỂM
 function analyzeOddEven(history) {
   if (history.length < 8) return null;
-  
+
   const recent8 = history.slice(0, 8);
   let chanCount = 0;
   let leCount = 0;
-  
+
   recent8.forEach(item => {
     const total = parseInt(item.tong);
     if (!isNaN(total)) {
@@ -598,7 +598,7 @@ function analyzeOddEven(history) {
       else leCount++;
     }
   });
-  
+
   if (chanCount >= 6) {
     return {
       pattern: 'odd_even_analysis',
@@ -614,27 +614,27 @@ function analyzeOddEven(history) {
       description: `Tổng lẻ chiếm ưu thế: ${leCount}/8 phiên`
     };
   }
-  
+
   return null;
 }
 
 // 16. PHÂN TÍCH XU HƯỚNG TỔNG ĐIỂM TĂNG GIẢM
 function analyzeTotalSumTrend(history) {
   if (history.length < 6) return null;
-  
+
   const recent6 = history.slice(0, 6);
   const totals = recent6.map(item => parseInt(item.tong)).filter(t => !isNaN(t));
-  
+
   if (totals.length !== 6) return null;
-  
+
   let increasing = 0;
   let decreasing = 0;
-  
+
   for (let i = 1; i < totals.length; i++) {
     if (totals[i] > totals[i-1]) increasing++;
     if (totals[i] < totals[i-1]) decreasing++;
   }
-  
+
   if (increasing >= 4) {
     return {
       pattern: 'total_sum_trend',
@@ -650,20 +650,20 @@ function analyzeTotalSumTrend(history) {
       description: `Xu hướng tổng điểm giảm: ${decreasing}/5 lần`
     };
   }
-  
+
   return null;
 }
 
 // 17. AI PHÁT HIỆN CAN THIỆP NHÀ CÁI - Thông minh như con người
 function detectHouseIntervention(history, predictionHistory) {
   if (history.length < 20 || predictionHistory.length < 10) return null;
-  
+
   const recent20 = history.slice(0, 20);
   const recentPredictions = predictionHistory.filter(p => p.kq_du_doan !== 'dang_doi').slice(0, 10);
-  
+
   let suspiciousScore = 0;
   const signals = [];
-  
+
   const recent5 = recent20.slice(0, 5);
   const extendedStreaks = recent20.filter((item, idx, arr) => {
     if (idx === 0) return false;
@@ -674,41 +674,41 @@ function detectHouseIntervention(history, predictionHistory) {
     }
     return streak >= 8;
   });
-  
+
   if (extendedStreaks.length > 0) {
     suspiciousScore += 30;
     signals.push('Chuỗi bất thường dài (8+ phiên) - Nghi ngờ can thiệp');
   }
-  
+
   const totals = recent20.map(item => parseInt(item.tong)).filter(t => !isNaN(t));
   const extremeTotals = totals.filter(t => t <= 4 || t >= 17);
   if (extremeTotals.length >= 5) {
     suspiciousScore += 25;
     signals.push(`Tổng điểm cực đoan xuất hiện ${extremeTotals.length}/20 lần`);
   }
-  
+
   if (recentPredictions.length >= 8) {
     const wrongPredictions = recentPredictions.filter(p => p.kq_du_doan === 'sai');
     const wrongRate = (wrongPredictions.length / recentPredictions.length) * 100;
-    
+
     if (wrongRate >= 70) {
       suspiciousScore += 35;
       signals.push(`Tỷ lệ sai cao bất thường: ${wrongRate.toFixed(0)}%`);
     }
   }
-  
+
   const recent10Results = recent20.slice(0, 10);
   let taiCount = recent10Results.filter(r => r.ket_qua === 'Tài').length;
   let xiuCount = 10 - taiCount;
-  
+
   if (taiCount >= 9 || xiuCount >= 9) {
     suspiciousScore += 20;
     signals.push('Mất cân bằng nghiêm trọng 10 ván gần');
   }
-  
+
   if (suspiciousScore >= 50) {
     const oppositePredict = recent5[0].ket_qua === 'Tài' ? 'Xỉu' : 'Tài';
-    
+
     return {
       pattern: 'house_intervention',
       prediction: oppositePredict,
@@ -717,7 +717,7 @@ function detectHouseIntervention(history, predictionHistory) {
       intervention_signals: signals
     };
   }
-  
+
   return null;
 }
 
@@ -727,18 +727,18 @@ async function fetchHistory() {
   if (historyCache.data.length > 0 && (now - historyCache.timestamp) < CACHE_TTL) {
     return historyCache.data;
   }
-  
+
   try {
-    const response = await axios.get('https://sunwinsaygex-ew87.onrender.com/api/taixiu/history', {
+    const response = await axios.get('https://sunwinsaygex-8616.onrender.com/api/taixiu/history', {
       timeout: 5000
     });
-    
+
     if (Array.isArray(response.data)) {
       historyCache.data = response.data.slice(0, MAX_HISTORY);
       historyCache.timestamp = now;
       return historyCache.data;
     }
-    
+
     return [];
   } catch (error) {
     console.error('❌ [Sun.win] Lỗi khi fetch history:', error.message);
@@ -750,20 +750,20 @@ async function fetchHistory() {
 async function generatePrediction() {
   try {
     const history = await fetchHistory();
-    
+
     if (history.length === 0) {
       console.log('⚠️ [Sun.win] Không có lịch sử');
       return null;
     }
-    
+
     const currentPhien = history[0].phien;
-    
+
     if (currentPhien === lastProcessedPhien) {
       return currentPrediction;
     }
-    
+
     const houseDetect = detectHouseIntervention(history, predictionHistory);
-    
+
     const algorithms = [
       analyzeCauBet,
       analyzeCauDao11,
@@ -782,35 +782,35 @@ async function generatePrediction() {
       analyzeOddEven,
       analyzeTotalSumTrend
     ];
-    
+
     const predictions = [];
-    
+
     for (const algo of algorithms) {
       const result = algo(history);
       if (result) {
         predictions.push(result);
       }
     }
-    
+
     if (houseDetect) {
       predictions.push(houseDetect);
     }
-    
+
     if (predictions.length === 0) {
       console.log('⚠️ [Sun.win] Không tìm thấy pattern nào');
       return null;
     }
-    
+
     predictions.sort((a, b) => b.confidence - a.confidence);
-    
+
     const bestPrediction = predictions[0];
-    
+
     const taiVotes = predictions.filter(p => p.prediction === 'Tài').length;
     const xiuVotes = predictions.filter(p => p.prediction === 'Xỉu').length;
-    
+
     let finalPrediction = bestPrediction.prediction;
     let finalConfidence = bestPrediction.confidence;
-    
+
     if (predictions.length >= 3) {
       if (taiVotes > xiuVotes * 2) {
         finalPrediction = 'Tài';
@@ -820,13 +820,13 @@ async function generatePrediction() {
         finalConfidence = Math.min(finalConfidence + 2, 85);
       }
     }
-    
+
     finalConfidence = Math.max(55, Math.min(85, finalConfidence));
-    
+
     const nextPhien = currentPhien + 1;
-    
+
     const breakDetect = detectBreakPattern(history, predictionHistory);
-    
+
     const newPrediction = {
       game: 'Sun.win',
       phien: nextPhien.toString(),
@@ -862,23 +862,23 @@ async function generatePrediction() {
       tong: 'dang_doi',
       timestamp: new Date().toISOString()
     };
-    
+
     currentPrediction = newPrediction;
     predictionHistory.unshift(newPrediction);
-    
+
     if (predictionHistory.length > MAX_HISTORY) {
       predictionHistory = predictionHistory.slice(0, MAX_HISTORY);
     }
-    
+
     lastProcessedPhien = currentPhien;
-    
+
     console.log(`\n🎲 [Sun.win] Dự đoán phiên #${nextPhien}: ${finalPrediction} (${finalConfidence.toFixed(0)}%) - ${bestPrediction.pattern}`);
     console.log(`   📊 Patterns: ${predictions.length} | Tài: ${taiVotes} | Xỉu: ${xiuVotes}`);
     console.log(`   ${breakDetect.recommendation}`);
     if (houseDetect) {
       console.log(`   🚨 AI phát hiện can thiệp nhà cái - Confidence: ${houseDetect.confidence.toFixed(0)}%`);
     }
-    
+
     return newPrediction;
   } catch (error) {
     console.error('❌ [Sun.win] Lỗi khi tạo dự đoán:', error.message);
@@ -890,26 +890,26 @@ async function generatePrediction() {
 async function updateResults() {
   try {
     const history = await fetchHistory();
-    
+
     if (history.length === 0) return;
-    
+
     const latestResult = history[0];
-    
+
     for (let prediction of predictionHistory) {
       if (prediction.phien === latestResult.phien.toString() && 
           prediction.kq_du_doan === 'dang_doi') {
-        
+
         prediction.ket_qua = latestResult.ket_qua;
         prediction.xuc_xac_1 = latestResult.xuc_xac_1.toString();
         prediction.xuc_xac_2 = latestResult.xuc_xac_2.toString();
         prediction.xuc_xac_3 = latestResult.xuc_xac_3.toString();
         prediction.tong = latestResult.tong.toString();
-        
+
         const isCorrect = prediction.du_doan === latestResult.ket_qua;
         prediction.kq_du_doan = isCorrect ? 'dung' : 'sai';
-        
+
         updatePatternLearning(prediction.thuat_toan, isCorrect);
-        
+
         if (isCorrect) {
           breakDetectionData.consecutiveWrong = 0;
           console.log(`✅ [Sun.win] Phiên #${prediction.phien}: ĐÚNG - ${prediction.du_doan} (${latestResult.xuc_xac_1}-${latestResult.xuc_xac_2}-${latestResult.xuc_xac_3} = ${latestResult.tong})`);
@@ -917,7 +917,7 @@ async function updateResults() {
           breakDetectionData.consecutiveWrong++;
           console.log(`❌ [Sun.win] Phiên #${prediction.phien}: SAI - Dự đoán ${prediction.du_doan}, thực tế ${latestResult.ket_qua} (${latestResult.xuc_xac_1}-${latestResult.xuc_xac_2}-${latestResult.xuc_xac_3} = ${latestResult.tong})`);
         }
-        
+
         break;
       }
     }
@@ -929,15 +929,15 @@ async function updateResults() {
 // ============ VÒNG LẶP CHÍNH ============
 async function startPredictionLoop() {
   console.log('🚀 [Sun.win] Bot dự đoán đã khởi động...\n');
-  
+
   while (true) {
     try {
       await updateResults();
-      
+
       await new Promise(resolve => setTimeout(resolve, CHECK_INTERVAL));
-      
+
       await generatePrediction();
-      
+
       await new Promise(resolve => setTimeout(resolve, WAIT_AFTER_RESULT));
     } catch (error) {
       console.error('❌ [Sun.win] Lỗi trong vòng lặp:', error.message);
@@ -950,21 +950,21 @@ async function startPredictionLoop() {
 function detectBreakPattern(history, predictions) {
   const suspiciousSignals = [];
   let breakProbability = 0;
-  
+
   if (breakDetectionData.consecutiveWrong >= 5) {
     suspiciousSignals.push(`⚠️ ${breakDetectionData.consecutiveWrong} lần sai liên tiếp - Nhà cái đang kiểm soát`);
     breakProbability += 30;
   }
-  
+
   if (breakDetectionData.consecutiveWrong >= 3) {
     breakProbability += 18;
   }
-  
+
   const recent10 = predictions.filter(p => p.kq_du_doan !== 'dang_doi').slice(0, 10);
   if (recent10.length >= 10) {
     const correctCount = recent10.filter(p => p.kq_du_doan === 'dung').length;
     const accuracy = (correctCount / 10) * 100;
-    
+
     if (accuracy < 35) {
       suspiciousSignals.push(`🔴 Độ chính xác 10 ván: ${accuracy.toFixed(0)}% - Cực kỳ thấp`);
       breakProbability += 25;
@@ -973,7 +973,7 @@ function detectBreakPattern(history, predictions) {
       breakProbability += 15;
     }
   }
-  
+
   if (history.length >= 5) {
     const recent5 = history.slice(0, 5);
     const allSame = recent5.every(r => r.ket_qua === recent5[0].ket_qua);
@@ -982,45 +982,45 @@ function detectBreakPattern(history, predictions) {
       breakProbability += 18;
     }
   }
-  
+
   if (history.length >= 8) {
     const recent8 = history.slice(0, 8);
     let taiCount = recent8.filter(r => r.ket_qua === 'Tài').length;
     let xiuCount = 8 - taiCount;
-    
+
     if (taiCount >= 7 || xiuCount >= 7) {
       suspiciousSignals.push('⚠️ Mất cân bằng nghiêm trọng 8 phiên gần');
       breakProbability += 12;
     }
   }
-  
+
   if (history.length >= 15) {
     const recent15 = history.slice(0, 15);
     const totals = recent15.map(h => parseInt(h.tong)).filter(t => !isNaN(t));
     const extremes = totals.filter(t => t <= 4 || t >= 17);
-    
+
     if (extremes.length >= 4) {
       suspiciousSignals.push(`🔴 Xuất hiện ${extremes.length} tổng điểm cực đoan trong 15 ván`);
       breakProbability += 20;
     }
   }
-  
+
   const recent20Preds = predictions.filter(p => p.kq_du_doan !== 'dang_doi').slice(0, 20);
   if (recent20Preds.length >= 15) {
     const highConfWrong = recent20Preds.filter(p => {
       const conf = parseInt(p.ti_le_thang);
       return !isNaN(conf) && conf >= 75 && p.kq_du_doan === 'sai';
     });
-    
+
     if (highConfWrong.length >= 5) {
       suspiciousSignals.push(`⚠️ ${highConfWrong.length} dự đoán độ tin cậy cao bị sai - Nghi ngờ can thiệp`);
       breakProbability += 22;
     }
   }
-  
+
   let riskLevel = 'low';
   let recommendation = '';
-  
+
   if (breakProbability >= 65) {
     riskLevel = 'critical';
     recommendation = '🛑 CỰC KỲ NGUY HIỂM - DỪNG NGAY LẬP TỨC';
@@ -1037,10 +1037,10 @@ function detectBreakPattern(history, predictions) {
     riskLevel = 'safe';
     recommendation = '✅ AN TOÀN - Có thể tiếp tục bình thường';
   }
-  
+
   breakDetectionData.riskLevel = riskLevel;
   breakDetectionData.suspiciousPatterns = suspiciousSignals;
-  
+
   return {
     risk_level: riskLevel,
     break_probability: Math.min(breakProbability, 98),
@@ -1072,7 +1072,7 @@ app.get('/api/sunwin/prediction', (req, res) => {
       tong: 'dang_doi'
     });
   }
-  
+
   res.json(currentPrediction);
 });
 
@@ -1092,7 +1092,7 @@ app.get('/api/sunwin/prediction-history', (req, res) => {
 app.get('/api/sunwin/stats', async (req, res) => {
   try {
     const history = await fetchHistory();
-    
+
     if (history.length === 0) {
       return res.json({ error: 'Không có lịch sử' });
     }
@@ -1100,7 +1100,7 @@ app.get('/api/sunwin/stats', async (req, res) => {
     const last20 = history.slice(0, 20);
     let taiCount = 0;
     let xiuCount = 0;
-    
+
     last20.forEach(item => {
       if (item.ket_qua === 'Tài') taiCount++;
       else xiuCount++;
@@ -1108,7 +1108,7 @@ app.get('/api/sunwin/stats', async (req, res) => {
 
     let correctPredictions = 0;
     let totalPredictions = predictionHistory.filter(p => p.kq_du_doan !== 'dang_doi').length;
-    
+
     predictionHistory.forEach(p => {
       if (p.kq_du_doan === 'dung') correctPredictions++;
     });
@@ -1150,7 +1150,7 @@ app.get('/api/sunwin/stats', async (req, res) => {
 
 app.get('/api/sunwin/learning', (req, res) => {
   const learningStats = {};
-  
+
   Object.keys(patternLearningData).forEach(pattern => {
     const data = patternLearningData[pattern];
     learningStats[pattern] = {
@@ -1160,7 +1160,7 @@ app.get('/api/sunwin/learning', (req, res) => {
       confidence_adjustment: data.confidence_adjustment
     };
   });
-  
+
   res.json({
     game: 'Sun.win',
     learning_data: learningStats,
@@ -1171,7 +1171,7 @@ app.get('/api/sunwin/learning', (req, res) => {
 app.get('/api/sunwin/break-detection', async (req, res) => {
   try {
     const history = await fetchHistory();
-    
+
     if (history.length === 0 || predictionHistory.length === 0) {
       return res.json({ 
         game: 'Sun.win',
@@ -1179,9 +1179,9 @@ app.get('/api/sunwin/break-detection', async (req, res) => {
         risk_level: 'unknown' 
       });
     }
-    
+
     const detection = detectBreakPattern(history, predictionHistory);
-    
+
     res.json({
       game: 'Sun.win',
       message: 'Hệ thống phát hiện nhà cái bẻ cầu - Sun.win',
@@ -1277,6 +1277,6 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   - http://localhost:${PORT}/api/sunwin/prediction`);
   console.log(`   - http://localhost:${PORT}/api/sunwin/stats`);
   console.log(`   - http://localhost:${PORT}/api/sunwin/history\n`);
-  
+
   startPredictionLoop();
 });
